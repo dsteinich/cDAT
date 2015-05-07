@@ -60,7 +60,7 @@ public class DBTesting {
 		
 		// Transformer
 		Transformer transform = new PojoTransformer(",");
-		TransformStreamContainer transContainer = new TransformStreamContainer(transform, targetContainer);
+		TransformStreamContainer transContainer = new TransformStreamContainer(targetContainer, transform);
 
 		// Producer
 		final PojoDbReader producer = new PojoDbReader(conn, transContainer);
@@ -88,7 +88,7 @@ public class DBTesting {
 		
 		// Transformer
 		Transformer transform = new PojoTransformer(",");
-		TransformStreamContainer transContainer = new TransformStreamContainer(transform, targetContainer);
+		TransformStreamContainer transContainer = new TransformStreamContainer(targetContainer, transform);
 
 		// Producer
 		final PojoDbReader producer = new PojoDbReader(conn, transContainer);
@@ -135,7 +135,7 @@ public class DBTesting {
 			
 			Time.waitForResponse(result,100);
 		} finally {
-			session.close();
+			Closer.close(session);
 		}
 
 		String csv = result[0];
