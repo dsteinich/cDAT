@@ -1,5 +1,6 @@
 package gov.cida.cdat.transform;
 
+import static gov.cida.cdat.transform.XmlConstants.XML_HEADER;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Deque;
@@ -33,9 +34,9 @@ public class MapToXmlTransformer extends Transformer {
 	private boolean first = true;
 
 	
-	public MapToXmlTransformer(IXmlMapping fieldMapping, String header, String entryNodeName) {
+	public MapToXmlTransformer(IXmlMapping fieldMapping, String entryNodeName) {
 		this.fieldMapping = fieldMapping;
-		this.header  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+header;
+		this.header = XML_HEADER + fieldMapping.getHeader();
 		this.entryNodeName = entryNodeName;
 		
 		groupings = new HashMap<>();

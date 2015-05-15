@@ -1,11 +1,13 @@
 package gov.cida.cdat.transform;
 
+import static gov.cida.cdat.transform.XmlConstants.XML_HEADER;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -83,6 +85,10 @@ public class MapToXlsxTransformer extends Transformer {
 		if (null == sheet) {
 			sheet = workbook.createSheet(sheetName);
 		}
+		
+		if (null == fieldMapping || fieldMapping.isEmpty()) {
+			defaultFieldMapping(map);
+		}
 
 		sheetRef = sheet.getPackagePart().getPartName().getName().substring(1);
 
@@ -104,20 +110,26 @@ public class MapToXlsxTransformer extends Transformer {
 		beginSheet();
 		insertRow();
 		int cellCount = 0;
-		for (String name : map.keySet()) {
-			
-			String hName =  fieldMapping.get(name);
-			if (null != hName) {
-				createCell(cellCount, fieldMapping.get(name));
-			} else {
-				createCell(cellCount, name);
-			}
-
+		for (String column : fieldMapping.values()) {
+			createCell(cellCount, column);
 			cellCount++;
 		}
+
 		endRow();
 	}
 
+	/**
+	 * Default the column headers to the query columns names and order if a fieldMapping is not supplied.
+	 * @param map
+	 */
+	protected void defaultFieldMapping(Map<String, Object> map) {
+		if (null == fieldMapping || fieldMapping.isEmpty()) {
+			fieldMapping = new LinkedHashMap<>();
+			for (String column : map.keySet()) {
+				fieldMapping.put(column, column);
+			}
+		}
+	}
 	
 	/**
 	 * Write the data.  Null cells are skipped to cut some of the bloat out of the file.
@@ -127,14 +139,16 @@ public class MapToXlsxTransformer extends Transformer {
 	private void writeData(Map<String, Object> map) throws IOException {
 		insertRow();
 		int cellCount = 0;
-		for (Object obj : map.values()) {
-			if (null != obj) {
+		for (String column : fieldMapping.keySet()) {
+			if (map.containsKey(column) && null != map.get(column) ) {
+				Object obj = map.get(column);
 				if (obj instanceof BigDecimal) {
 					createCell(cellCount, ((BigDecimal) obj).doubleValue());
 				} else {
 					createCell(cellCount, obj.toString());
 				}
 			}
+
 			cellCount++;
 		}
 		endRow();
@@ -173,8 +187,7 @@ public class MapToXlsxTransformer extends Transformer {
 	 * @throws IOException  when issues with the streaming.
 	 */
 	public void beginSheet() throws IOException {
-		copyString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-			+ "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">",
+		copyString(XML_HEADER + "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">",
 				zos);
 		copyString("<sheetData>\n", zos);
 	}

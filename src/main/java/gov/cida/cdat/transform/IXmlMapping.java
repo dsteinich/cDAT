@@ -7,7 +7,7 @@ public interface IXmlMapping {
 
 	String getRoot();
 
-	String getRootNamespace();
+	String getHeader();
 
 	Map<String, List<String>> getStructure();
 
