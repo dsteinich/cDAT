@@ -1,15 +1,20 @@
 package gov.cida.cdat.transform;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * Note that this class only handles comma and tab delimited files at this time.
+ *
+ */
 public class CharacterSeparatedValue extends Transformer {
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
@@ -35,15 +40,12 @@ public class CharacterSeparatedValue extends Transformer {
 	}
 	
 	public CharacterSeparatedValue(String valueSeparator, String entrySeparator) {
-		if (valueSeparator == null || entrySeparator == null) {
-			throw new RuntimeException("Separators must provided for " + getClass());
-		}
-		if (valueSeparator == null || entrySeparator == null) { // TODO this should check for blank
+		if (StringUtils.isEmpty(valueSeparator) || StringUtils.isEmpty(entrySeparator)) {
 			throw new RuntimeException("Separators must provided for " + getClass());
 		}
 		this.valueSeparator = valueSeparator;
 		this.entrySeparator = entrySeparator;
-		this.fieldMappings  = new HashMap<String, String>(); // default is no mappings
+		this.fieldMappings  = new LinkedHashMap<String, String>(); // default is no mappings (they will be populated from the data linkedHashMap)
 	}
 	
 	
@@ -73,30 +75,29 @@ public class CharacterSeparatedValue extends Transformer {
 
 		StringBuilder entry = new StringBuilder();
 		String sep = "";
-		for (Map.Entry<String,Object> column : map.entrySet()) {
+		for (String column : fieldMappings.keySet()) {
 			entry.append(sep);
 			String initialValue = "";
-			if ( null != column.getValue() ) {
-				initialValue = column.getValue().toString();
+			if (map.containsKey(column) && null != map.get(column) ) {
+				initialValue = map.get(column).toString();
 			}
 			String encodeValue = encode(initialValue);
 			entry.append(encodeValue);
 			sep = valueSeparator;
 		}
-//		stream.write( transformer.getEntrySeparator().getBytes() );
 		return entry.toString();
 	}
 	
 
 	String doHeader(Map<String,Object> headerEntry) {
 		doHeader = false;
-		// this makes the Java DRY
 		Map<String,	Object> headerMap = new LinkedHashMap<String, Object>();
-		for (Map.Entry<String,Object> column : headerEntry.entrySet()) {
-			String originalColumnName = column.getKey();
-			String newColumnName = fieldMappings.get(originalColumnName);
-			headerMap.put(originalColumnName, newColumnName);
+		if (fieldMappings.isEmpty()) {
+			for (Map.Entry<String,Object> column : headerEntry.entrySet()) {
+				fieldMappings.put(column.getKey(), column.getKey());
+			}
 		}
+		headerMap.putAll(fieldMappings);
 		return transform(headerMap);
 	}
 	
@@ -107,16 +108,10 @@ public class CharacterSeparatedValue extends Transformer {
 			return "";
 		}
 		String processing = value;
-		processing = XmlUtils.unEscapeXMLEntities(processing);
-		processing = processing.replaceAll("[\n\r\t]", ""); // Handles newlines and carriage returns, and tabs
 		if (COMMA.equals(valueSeparator)) { // Currently handles commas and quotes.
-			boolean hasQuotes = processing.indexOf('"') >= 0;
-			if (hasQuotes) {
-				Matcher matcher = QUOTE.matcher(processing);
-				processing = matcher.replaceAll("\"\""); // escape quotes by doubling them
-			}
-			boolean encloseInQuotes = hasQuotes || processing.indexOf(',')>=0;
-			processing = (encloseInQuotes)  ?'"'+processing+'"'  :processing;
+			processing = StringEscapeUtils.escapeCsv(processing);
+		} else {
+			processing = processing.replaceAll("[\n\r\t]", ""); // Handles newlines and carriage returns, and tabs
 		}
 		return processing;
 	}
@@ -124,7 +119,7 @@ public class CharacterSeparatedValue extends Transformer {
 	
 	/**
 	 * The record prefix is the header for the first row
-	 * and a simple comma for subsequent rows.
+	 * and the entrySeparator for subsequent rows.
 	 */
 	String prefix(Map<String,Object> entry) {
 		String prefix = "";

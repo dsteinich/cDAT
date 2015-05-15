@@ -3,7 +3,6 @@ package gov.cida.cdat.transform;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
@@ -40,12 +39,6 @@ public class MapToJsonTransformer extends Transformer {
 		}
 	}
 	
-	
-	@Override
-	public String encode(String value) {
-		return StringEscapeUtils.escapeJson(value);
-	}
-
 	
 	/**
 	 * The record prefix is the header for the first row

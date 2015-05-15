@@ -3,13 +3,12 @@ package gov.cida.cdat.transform;
 import java.util.regex.Pattern;
 
 public interface XmlConstants {
+	
+	String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	String BEGIN_OPEN_TAG = "<";
 	String CLOSE_TAG = ">";
 	String BEGIN_END_TAG = "</";
 	String CLOSE_EMPTY_TAG = "/>";
-	String WQX_OUTBOUND = "<WQX-Outbound></WQX-Outbound>";
-	String WQX_EMPTY_DOC = "<WQX xmlns='http://qwwebservices.usgs.gov/schemas/WQX-Outbound/2_0/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://qwwebservices.usgs.gov/schemas/WQX-Outbound/2_0/ http://qwwebservices.usgs.gov/schemas/WQX-Outbound/2_0/index.xsd'></WQX>";
-	String KML_EMPTY_DOC = "<kml><Document></Document></kml>";
 	
 	String  REGEX_NON_QNAME_SEPARATORS = "[()/@]";
 	String  REGEX_NON_QNAME_CHARS = "[^-_.:0-9A-Za-z]";
