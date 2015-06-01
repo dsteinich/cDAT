@@ -255,6 +255,7 @@ public class MapToXlsxTransformer extends Transformer {
 	
 	@Override
 	public byte[] getRemaining() {
+		//TODO WARNING!! the getRemaining() cannot do end of dataset processing!! That belongs in the close() implementation.
 		try {
 			endSheet();
 			zos.finish();

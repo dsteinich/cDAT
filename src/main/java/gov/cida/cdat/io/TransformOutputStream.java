@@ -38,6 +38,7 @@ public class TransformOutputStream extends OutputStream {
 	
 	@Override
 	public void flush() throws IOException {
+		//TODO WARNING!! the getRemaining() cannot do end of dataset processing!! That belongs in the close() implementation.
 		target.write( transform.getRemaining() );
 		super.flush();
 	}

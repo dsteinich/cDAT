@@ -57,6 +57,7 @@ public class MapToJsonTransformer extends Transformer {
 	
 	@Override
 	public byte[] getRemaining() {
+		//TODO WARNING!! the getRemaining() cannot do end of dataset processing!! That belongs in the close() implementation.
 		if (StringUtils.isEmpty(footer)) {
 			return new byte[0];
 		}

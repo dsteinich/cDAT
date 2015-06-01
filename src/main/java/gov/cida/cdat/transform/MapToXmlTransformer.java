@@ -153,6 +153,7 @@ public class MapToXmlTransformer extends Transformer {
 	// TODO asdf this is a copy from Json
 	@Override
 	public byte[] getRemaining() {
+		//TODO WARNING!! the getRemaining() cannot do end of dataset processing!! That belongs in the close() implementation.
 		StringBuilder footer = new StringBuilder();
 		
     	while ( ! nodes.isEmpty() ) {
